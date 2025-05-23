@@ -7,32 +7,58 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { LucideIcon } from "lucide-react";
+import { Brain, BrainCog, CreditCard, GalleryVerticalEnd, Image, Settings, SquareTerminal } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 
-export function NavMain({
-  items,
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon?: LucideIcon;
-    isActive?: boolean;
-    items?: {
-      title: string;
-      url: string;
-    }[];
-  }[];
-}) {
+const navItems = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: SquareTerminal,
+  },
+  {
+    title: "Generate Image",
+    url: "/image-generation",
+    icon: Image,
+  },
+  {
+    title: "My Models",
+    url: "/models",
+    icon: Brain,
+  },
+  {
+    title: "Train Model",
+    url: "/model-training",
+    icon: BrainCog,
+  },
+  {
+    title: "My Images",
+    url: "/gallery",
+    icon: GalleryVerticalEnd,
+  },
+  {
+    title: "Billing",
+    url: "/billing",
+    icon: CreditCard,
+  },
+  {
+    title: "Settings",
+    url: "/account-settings",
+    icon: Settings,
+  },
+];
+
+
+export function NavMain() {
   const pathname = usePathname();
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item, index) => (
+        {navItems.map((item, index) => (
           <motion.div
             key={item.title}
             initial={{ opacity: 0, y: -10 }}
@@ -41,9 +67,9 @@ export function NavMain({
           >
             <Link
               href={item.url}
-              className={cn("rounded-md", pathname === item.url ? 'text-primary bg-primary/10' : 'text-muted-foreground')}
+              className={cn("rounded-md", pathname === item.url ? 'text-primary bg-primary/10 rounded-md' : 'text-muted-foreground')}
             >
-              <SidebarMenuItem className={pathname === item.url ? 'bg-primary/5' : ''}>
+              <SidebarMenuItem className={pathname === item.url ? 'bg-primary/5 rounded-md' : ''}>
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
