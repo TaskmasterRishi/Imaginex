@@ -47,7 +47,7 @@ export function NavMain({
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 50 }}
                 >
                   <SidebarMenuButton
                     tooltip={item.title}
