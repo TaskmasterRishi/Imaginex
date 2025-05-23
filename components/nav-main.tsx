@@ -56,7 +56,6 @@ export function NavMain() {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
         {navItems.map((item, index) => (
           <motion.div
