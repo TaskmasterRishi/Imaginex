@@ -30,7 +30,7 @@ const AuthenticationPage = () => {
               <p className="text-sm lg:text-lg text-gray-300">
                 &ldquo;Imaginex has completely transformed my creative workflow. I
                 can generate stunning, professional-grade images in minutes,
-                saving me both time and money. It's like having a full design
+                saving me both time and money. It&apos;s like having a full design
                 studio at my fingertips.&rdquo;
               </p>
               <footer className="text-xs lg:text-sm text-gray-400">- John Doe</footer>
