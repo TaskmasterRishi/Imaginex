@@ -1,8 +1,7 @@
 "use client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
-import { z } from "zod";
+
+import React, { useEffect } from "react";
+import z from "zod";
 import {
   Form,
   FormControl,
@@ -11,9 +10,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,6 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -28,8 +31,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { generateImages } from "@/app/actions/image-actions";
+import { generateImage } from "@/app/actions/image-actions";
 
 export const imageGenerationFormSchema = z.object({
   model: z.string({
@@ -39,102 +41,112 @@ export const imageGenerationFormSchema = z.object({
     required_error: "Prompt is required",
   }),
   guidance: z.number({
-    required_error: "Guidance Scale is required",
+    required_error: "Guidance is required",
   }),
   num_outputs: z
     .number()
-    .min(1, { message: "Number of outputs must be at least 1" })
-    .max(4, { message: "Number of outputs must be at most 4" }),
-  aspect_ratio: z.enum(
-    ["1:1", "16:9", "9:16", "4:3", "3:4"],
-    {
-      required_error: "Aspect ratio is required",
-    }
-  ),
-  output_format: z.enum(["png", "jpg", "webp"], {
+    .min(1, { message: "At least 1 output is required" })
+    .max(4, { message: "Maximum 4 outputs allowed" }),
+  aspect_ratio: z.string({
+    required_error: "Aspect ratio is required",
+  }),
+  output_format: z.string({
     required_error: "Output format is required",
   }),
   output_quality: z
     .number()
-    .min(1, { message: "Output quality must be at least 1" })
-    .max(100, { message: "Output quality must be at most 100" }),
+    .min(1, { message: "Minimum quality is 1" })
+    .max(100, { message: "Maximum quality is 100" }),
   num_inference_steps: z
     .number()
-    .min(1, { message: "Number of inference steps must be at least 1" })
-    .max(50, { message: "Number of inference steps must be at most 50" }),
+    .min(1, { message: "Minimum steps is 1" })
+    .max(50, { message: "Maximum steps is 50" }),
 });
 
 const Configuration = () => {
   const form = useForm<z.infer<typeof imageGenerationFormSchema>>({
     resolver: zodResolver(imageGenerationFormSchema),
     defaultValues: {
-      model: "black-forest-labs/flux-dev",
+      model: "",
       prompt: "",
-      guidance: 3.5,
-      num_outputs: 1,
       aspect_ratio: "1:1",
-      output_format: "png",
+      output_format: "jpg",
+      num_outputs: 1,
+      guidance: 3.5,
       output_quality: 80,
       num_inference_steps: 20,
-    }, 
+    },
   });
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (name === "model") {
-        let newSteps = 28; // Default steps for flux-dev
+        let newStep;
         if (value.model === "black-forest-labs/flux-schnell") {
-          newSteps = 4;
+          newStep = 4;
+        } else {
+          newStep = 28;
         }
-        form.setValue("num_inference_steps", newSteps);
+        if (newStep !== undefined) {
+          form.setValue("num_inference_steps", newStep);
+        }
       }
     });
     return () => subscription.unsubscribe();
   }, [form]);
 
   async function onSubmit(values: z.infer<typeof imageGenerationFormSchema>) {
-    console.log(values);
-    const { error, success, data } = await generateImages(values);
+    const {error, success, data} = await generateImage(values);
+    console.log(error, success , data);
   }
 
   return (
-    <Card className="max-w-6xl mx-auto w-full">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">Image Generation</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <TooltipProvider>
+      <Card className="p-6 w-full mx-auto h-full m-0">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">Image Generation</CardTitle>
+        </CardHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full">
-            <div className="grid grid-cols-1 md:grid-cols-1 w-full gap-6">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6 h-full"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="model"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
+                  <FormItem className="w-full">
+                    <FormLabel className="font-medium">
                       Model
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Info className="h-4 w-4 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Select the AI model for image generation</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="w-4 h-4" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            Choose the AI model for image generation. Each model
+                            has unique capabilities.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
                     </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-background w-full">
                           <SelectValue placeholder="Select a model" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="black-forest-labs/flux-dev">Flux Dev</SelectItem>
-                        <SelectItem value="black-forest-labs/flux-schnell">Flux Schnell</SelectItem>
-                        <SelectItem value="stability-ai/stable-diffusion:ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4">Stable Diffusion</SelectItem>
-                        <SelectItem value="google/imagen-4">Imagen 4</SelectItem>
+                        <SelectItem value="black-forest-labs/flux-schnell">
+                          Flux Schnell
+                        </SelectItem>
+                        <SelectItem value="black-forest-labs/flux-dev">
+                          Flux Dev
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -142,107 +154,54 @@ const Configuration = () => {
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="aspect_ratio"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        Aspect Ratio
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Info className="h-4 w-4 text-muted-foreground" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Controls the aspect ratio of the generated image</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select aspect ratio" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="1:1">1:1 (Square)</SelectItem>
-                          <SelectItem value="16:9">16:9 (Widescreen)</SelectItem>
-                          <SelectItem value="9:16">9:16 (Portrait)</SelectItem>
-                          <SelectItem value="4:3">4:3 (Standard)</SelectItem>
-                          <SelectItem value="3:4">3:4 (Portrait)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="output_format"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        Output Format
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Info className="h-4 w-4 text-muted-foreground" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Controls the output format of the generated image</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select output format" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="png">PNG</SelectItem>
-                          <SelectItem value="jpg">JPG</SelectItem>
-                          <SelectItem value="webp">WebP</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
               <FormField
                 control={form.control}
-                name="guidance"
+                name="aspect_ratio"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      Guidance Scale: {field.value}
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Info className="h-4 w-4 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Controls how closely the model follows the prompt (1-20)</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                  <FormItem className="w-full">
+                    <FormLabel className="font-medium">
+                      Aspect Ratio
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="w-4 h-4" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            Set the width-to-height ratio of the generated image
+                            (e.g., 1:1 for square, 16:9 for widescreen).
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
                     </FormLabel>
-                    <FormControl>
-                      <Slider
-                        min={1}
-                        max={20}
-                        step={0.5}
-                        defaultValue={[field.value]}
-                        onValueChange={(value) => field.onChange(value[0])}
-                      />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-background w-full">
+                          <SelectValue placeholder="Select aspect ratio" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {[
+                          "1:1",
+                          "3:2",
+                          "2:3",
+                          "4:3",
+                          "3:4",
+                          "4:5",
+                          "5:4",
+                          "9:16",
+                          "16:9",
+                          "9:21",
+                          "21:9",
+                        ].map((ratio) => (
+                          <SelectItem key={ratio} value={ratio}>
+                            {ratio}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -252,26 +211,111 @@ const Configuration = () => {
                 control={form.control}
                 name="num_outputs"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      Number of Outputs: {field.value}
-                      <TooltipProvider>
+                  <FormItem className="w-full">
+                    <FormLabel className="font-medium">
+                      Number of Outputs
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="w-4 h-4" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            Specify how many images to generate (1-4). More
+                            outputs may take longer.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="1"
+                        min={1}
+                        max={4}
+                        className="bg-background w-full"
+                        {...field}
+                        onChange={(event) =>
+                          field.onChange(+event.target.value)
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="output_format"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel className="font-medium">
+                      Output Format
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="w-4 h-4" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            Choose the file format (JPG, PNG, or WEBP) for the
+                            generated images.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-background w-full">
+                          <SelectValue placeholder="Select output format" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {["jpg", "png", "webp"].map((format) => (
+                          <SelectItem key={format} value={format}>
+                            {format.toUpperCase()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="space-y-4 w-full">
+              <FormField
+                control={form.control}
+                name="guidance"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel className="flex items-center justify-between font-medium">
+                      <span>
+                        Guidance
                         <Tooltip>
                           <TooltipTrigger>
-                            <Info className="h-4 w-4 text-muted-foreground" />
+                            <Info className="w-4 h-4 ml-1 inline-block" />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Controls the number of images generated</p>
+                            <p>
+                              Adjust how strictly the AI follows your prompt (lower values = more creative, higher values = more precise).
+                            </p>
                           </TooltipContent>
                         </Tooltip>
-                      </TooltipProvider>
+                      </span>
+                      <span className="text-muted-foreground">
+                        {field.value}
+                      </span>
                     </FormLabel>
                     <FormControl>
                       <Slider
-                        min={1}
-                        max={4}
-                        step={1}
-                        defaultValue={[field.value]}
+                        min={0}
+                        max={10}
+                        step={0.5}
+                        defaultValue={[Number(field.value)]}
                         onValueChange={(value) => field.onChange(value[0])}
                       />
                     </FormControl>
@@ -284,26 +328,31 @@ const Configuration = () => {
                 control={form.control}
                 name="output_quality"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      Output Quality: {field.value}%
-                      <TooltipProvider>
+                  <FormItem className="w-full">
+                    <FormLabel className="flex items-center justify-between font-medium">
+                      <span>
+                        Output Quality
                         <Tooltip>
                           <TooltipTrigger>
-                            <Info className="h-4 w-4 text-muted-foreground" />
+                            <Info className="w-4 h-4 ml-1 inline-block" />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Controls the quality of the generated image</p>
+                            <p>
+                              Set the quality of the generated image (1-100). Higher values produce sharper results but may take longer.
+                            </p>
                           </TooltipContent>
                         </Tooltip>
-                      </TooltipProvider>
+                      </span>
+                      <span className="text-muted-foreground">
+                        {field.value}
+                      </span>
                     </FormLabel>
                     <FormControl>
                       <Slider
                         min={1}
                         max={100}
                         step={1}
-                        defaultValue={[field.value]}
+                        defaultValue={[Number(field.value)]}
                         onValueChange={(value) => field.onChange(value[0])}
                       />
                     </FormControl>
@@ -316,28 +365,33 @@ const Configuration = () => {
                 control={form.control}
                 name="num_inference_steps"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      Inference Steps: {field.value}
-                      <TooltipProvider>
+                  <FormItem className="w-full">
+                    <FormLabel className="flex items-center justify-between font-medium">
+                      <span>
+                        Num Inference Steps
                         <Tooltip>
                           <TooltipTrigger>
-                            <Info className="h-4 w-4 text-muted-foreground" />
+                            <Info className="w-4 h-4 ml-1 inline-block" />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>Controls the number of inference steps</p>
+                            <p>
+                              Control the number of refinement steps (1-50). More steps improve quality but increase generation time.
+                            </p>
                           </TooltipContent>
                         </Tooltip>
-                      </TooltipProvider>
+                      </span>
+                      <span className="text-muted-foreground">
+                        {field.value}
+                      </span>
                     </FormLabel>
                     <FormControl>
                       <Slider
                         min={1}
                         max={
-                          form.getValues("model") === "black-forest-labs/flux-schnell" ? 4 : 50
+                          form.getValues("model") === 'black-forest-labs/flux-schnell' ? 4 : 50
                         }
                         step={1}
-                        defaultValue={[field.value]}
+                        defaultValue={[Number(field.value)]}
                         onValueChange={(value) => field.onChange(value[0])}
                       />
                     </FormControl>
@@ -345,46 +399,49 @@ const Configuration = () => {
                   </FormItem>
                 )}
               />
+            </div>
 
-              <FormField
-                control={form.control}
-                name="prompt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      Prompt
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Info className="h-4 w-4 text-muted-foreground" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Describe the image you want to generate</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </FormLabel>
-                    <FormControl>
-                      <textarea
-                        placeholder="Enter your prompt"
-                        {...field}
-                        className="w-full p-2 border rounded"
-                        rows={4}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="prompt"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel className="font-medium flex items-center gap-2">
+                    Prompt
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="w-4 h-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Describe the image you want to generate in detail. Be
+                          specific about objects, colors, styles, and
+                          composition for better results.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe the image you want to generate..."
+                      className="bg-background min-h-[150px] w-full"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <Button type="submit" className="w-full">
-                Generate Image
+            <div className="flex justify-center w-full">
+              <Button type="submit" className="w-full md:w-auto">
+                Generate Images
               </Button>
             </div>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+      </Card>
+    </TooltipProvider>
   );
 };
 
