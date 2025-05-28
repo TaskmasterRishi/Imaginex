@@ -434,7 +434,7 @@ const Configuration = () => {
             />
 
             <div className="flex justify-center w-full">
-              <Button type="submit" className="w-full md:w-auto">
+              <Button type="submit" className="w-full md:w-auto" disabled={useGeneratedStore((state) => state.loading)}>
                 Generate Images
               </Button>
             </div>
