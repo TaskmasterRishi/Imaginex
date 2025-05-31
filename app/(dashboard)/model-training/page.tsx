@@ -1,7 +1,6 @@
-'use client'
+"use client";
 import ModelTrainingFrom from "@/components/models/ModelTrainingFrom";
 import React from "react";
-
 
 const ModelTraining = () => {
   return (
