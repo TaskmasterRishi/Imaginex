@@ -4,7 +4,7 @@ import React from "react";
 
 const ModelTraining = () => {
   return (
-    <section className="w-full h-full flex flex-col px-20 mx-auto">
+    <section className="w-full h-full flex flex-col px-10 mx-auto">
       <h1 className="text-3xl font-bold mb-2">Train Model</h1>
       <p className="text-muted-foreground mb-6">
         Train model with your own image

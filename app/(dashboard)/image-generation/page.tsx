@@ -4,7 +4,7 @@ import GeneratedImages from '@/components/image-generation/GeneratedImages'
 
 const ImageGeneration = () => {
   return (
-    <section className='container mx-auto grid gap-4 grid-cols-1 md:grid-cols-3 md:h-[80vh]'>
+    <section className='w-full justify-center px-10 mx-auto grid gap-4 grid-cols-1 md:grid-cols-3 md:h-[80vh]'>
       <div className='md:col-span-1 flex items-center justify-center'>
         <Configuration />
       </div>

@@ -9,7 +9,7 @@ const replicate = new Replicate({
 
 const WEBHOOK_URL =
   process.env.SITE_URL ||
-  "https://56ff-2409-40c1-3023-a254-c24e-b5d4-89ce-3e7d.ngrok-free.app";
+  "https://0611-152-59-23-111.ngrok-free.app";
 
 export async function POST(request: NextRequest) {
   try {
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
           input_images: fileUrl.signedUrl,
           trigger_word: "omzx",
         },
-        webhook: `${WEBHOOK_URL}/api/webhooks/training`,
+        webhook: `${WEBHOOK_URL}/api/webhooks/training?userId=${user.id}&modelName=${encodeURIComponent(modelId)}&fileName=${encodeURIComponent(fileName)}`,
         webhook_events_filter: ["completed"],
       }
     );
