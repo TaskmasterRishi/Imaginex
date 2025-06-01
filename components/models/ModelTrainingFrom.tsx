@@ -92,6 +92,8 @@ const ModelTrainingFrom = () => {
       formData.append("modelName", values.modelName);
       formData.append("gender", values.gender);
 
+      toast.loading("Model training starting ...",{id : toastId})
+
       //use the train handler
       const response = await fetch("/api/train", {
         method: "POST",
