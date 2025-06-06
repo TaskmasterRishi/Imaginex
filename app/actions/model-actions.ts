@@ -79,7 +79,7 @@ export async function deleteModel(
         }
       );
 
-      if (!res.ok) {
+      if (!res) {
         throw new Error("Failed to delete the model");
       }
     } catch (e) {

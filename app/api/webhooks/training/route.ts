@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     if(body.status === "succeeded"){
         //send a successfull status email
         await resend.emails.send({
-          from: 'ImaginX AI <>',
+          from: 'ImaginX AI <<onboarding@resend.dev>>',
           to: [userEmail],
           subject: 'Your model training is complete',
           react: EmailTemplate({ userName, message:"Your model training is completed!" }) as React.ReactElement,
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
         //update the supabase table
         await supabaseAdmin.from("models").update({
             training_status: body.status,
-            training_time : body.metric?.toatl_time ?? null,
+            training_time : body.metric?.total_time ?? null,
             version: body.output?.version.split(":")[1] ?? null,
         }).eq("user_id",userId).eq("model_name",modelName);
 

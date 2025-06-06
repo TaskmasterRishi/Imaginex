@@ -12,6 +12,7 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import { formatDistanceToNow } from "date-fns";
 import {
+    ArrowRight,
   CheckCircle2,
   Clock,
   Loader2,
@@ -32,6 +33,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { deleteModel } from "@/app/actions/model-actions";
+import { cn } from "@/lib/utils";
 
 type ModelType = {
   error: string | null;
@@ -174,6 +176,29 @@ const ModelList = ({ models }: ModelListProps) => {
               </div>
             </div>
           </CardContent>
+          <div className="px-6 pb-6 pt-0">
+            <Link
+              href={
+                model.training_status === "succeeded"
+                  ? `/image-generation?model_id=${model.model_id}:${model.version}`
+                  : '#'
+              }
+              className={cn(
+                "inline-flex w-full group transition-all",
+                model.training_status !== "succeeded" && "pointer-events-none opacity-50"
+              )}
+            >
+              <Button 
+                className="w-full group-hover:bg-primary/90 transition-colors"
+                variant="default"
+                size="lg"
+                disabled={model.training_status !== "succeeded"}
+              >
+                <span className="font-medium">Generate Images</span>
+                <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+          </div>
         </Card>
       ))}
     </div>
